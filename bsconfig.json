@@ -12,7 +12,8 @@
   "suffix": ".bs.js",
   "bs-dependencies": [
     "bs-css",
-    "bucklescript-tea"
+    "bucklescript-tea",
+    "typed-svg"
   ],
   "warnings": {
     "error": "+101"

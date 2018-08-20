@@ -26,6 +26,7 @@
     "webpack-dev-server": "^3.1.5"
   },
   "dependencies": {
+    "typed-svg": "github:canadaduane/typed-svg",
     "bs-css": "^7.1.0"
   }
 }

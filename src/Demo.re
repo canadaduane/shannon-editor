@@ -2,6 +2,9 @@ open Tea.App;
 
 open Tea.Html;
 
+open TypedSvg;
+open TypedSvg.PxUnits;
+
 /*MODEL
  */
 let init = () => 4;
@@ -55,7 +58,8 @@ module Styles = {
   let number = Css.style([fontSize(px(100))]);
 };
 
-let view_button = (title, msg) => button([onClick(msg)], [text(title)]);
+let view_button = (title, msg) =>
+  button([onClick(msg)], [text(title)]);
 
 let view = model =>
   div(
@@ -90,6 +94,11 @@ let view = model =>
       div(
         [class'(Styles.container)],
         [span([class'(Styles.number)], [text(string_of_int(model))])],
+      ),
+      Graphic.svgArea(
+        800.,
+        600.,
+        [Graphic.translate(100., 100., Graphic.block(200., 60.))],
       ),
     ],
   );
