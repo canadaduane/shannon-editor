@@ -8,6 +8,8 @@ open TypedSvg.Types;
 
 open TypedSvg.Attributes;
 
+open Path;
+
 let svgAreaProportional =
     (~width=500., ~height=500., ~maxX=100., ~maxY=100., children) =>
   Tea.Svg.svg(
@@ -45,48 +47,97 @@ let pill = (x, y, w, h, outlineColor) =>
     [],
   );
 
-let block = (w, h) => {
+type direction =
+  | Left
+  | Right;
+
+let block = (w, h, mouthHeight) => {
   let fillColor = Color("#4797ff");
   let outlineColor = Color("#4280d7");
-  /* let corner = 5.0; */
   let unit = 10.0;
   let hh = h /. 2.0;
-  /* let width1 = 20.;
-     let width2 = 40.;
-     let width3 = 150.; */
   let right = 70.0 +. w;
-  /* let holeX = 70.0 +. width1 +. unit *. 3.0;
-     let holeY = -. height /. 2.0 +. unit;
-     let holeW = width2 +. unit *. 4.0;
-     let holeH = height -. unit *. 2.0; */
+
+  /* Draw a connector tab */
+  let tabPath = (dir: direction) => {
+    let mul =
+      switch (dir) {
+      | Left => (-1.0)
+      | Right => 1.0
+      };
+    [
+      LineToRel((unit *. mul, unit)),
+      HorizontalToRel(unit *. 2.0 *. mul),
+      LineToRel((unit *. mul, -. unit)),
+    ];
+  };
+
+  let optionalMouth =
+    if (mouthHeight > 0.0) {
+      Belt.List.concatMany([|
+        [
+          /* Top of Mouth */
+          HorizontalTo(80.0),
+        ],
+        tabPath(Left),
+        [
+          /* Top of Mouth */
+          HorizontalTo(20.0),
+          /* Left inner side */
+          VerticalToRel(mouthHeight),
+          /* Bottom of Mouth */
+          HorizontalTo(40.0),
+        ],
+        tabPath(Right),
+        [
+          /* Bottom of Mouth */
+          HorizontalTo(right),
+          /* Right outer side */
+          VerticalToRel(40.0),
+        ],
+      |]);
+    } else {
+      [];
+    };
 
   [
     /* Block Outline */
     Tea.Svg.path(
       [
-        dPath([
-          MoveTo(0.0, 0.0),
-          LineTo(0.0, -. hh),
-          LineTo(20.0, -. hh),
-          LineTo(30.0, -. hh +. unit),
-          LineTo(50.0, -. hh +. unit),
-          LineTo(60.0, -. hh),
-          LineTo(right, -. hh),
-          LineTo(right, hh),
-          LineTo(60.0, hh),
-          LineTo(50.0, hh +. unit),
-          LineTo(30.0, hh +. unit),
-          LineTo(20.0, hh),
-          LineTo(0.0, hh),
-          Close,
-        ]),
+        dPath(
+          Belt.List.concatMany([|
+            [
+              /* Start in Upper-Left Corner */
+              MoveTo(0.0, -. hh),
+              /* Top */
+              HorizontalTo(20.0),
+            ],
+            tabPath(Right),
+            [
+              /* Top */
+              HorizontalTo(right),
+              /* Right side */
+              VerticalTo(hh),
+            ],
+            optionalMouth,
+            [
+              /* Bottom */
+              HorizontalTo(60.0),
+            ],
+            tabPath(Left),
+            [
+              /* Bottom */
+              HorizontalTo(0.0),
+              /* Left side */
+              Close,
+            ],
+          |]),
+        ),
         fill(Some(fillColor)),
         stroke(Some(outlineColor)),
         strokeWidth(1.5),
       ],
       [],
     ),
-    /* Inner Oval Carve-Out */
-    /* pill(holeX, holeY, holeW, holeH, outlineColor), */
   ];
 };

@@ -7,7 +7,7 @@ open TypedSvg.PxUnits;
 
 /*MODEL
  */
-let init = () => 4;
+let init = () => 30;
 
 /*
  UPDATE
@@ -21,8 +21,8 @@ type msg =
 
 let update = model =>
   fun
-  | Increment => model + 1
-  | Decrement => model - 1
+  | Increment => model + 20
+  | Decrement => model - 20
   | Reset => 0
   | Set(v) => v;
 
@@ -82,7 +82,7 @@ let view = model =>
           br([]),
           view_button("Decrement", Decrement),
           br([]),
-          view_button("Set to 42", Set(42)),
+          view_button("Set to 60", Set(60)),
           br([]),
           if (model != 0) {
             view_button("Reset", Reset);
@@ -98,7 +98,13 @@ let view = model =>
       Graphic.svgArea(
         800.,
         600.,
-        [Graphic.translate(100., 100., Graphic.block(200., 60.))],
+        [
+          Graphic.translate(
+            100.,
+            100.,
+            Graphic.block(200., 60., float_of_int(model)),
+          ),
+        ],
       ),
     ],
   );
