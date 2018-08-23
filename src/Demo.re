@@ -2,9 +2,6 @@ open Tea.App;
 
 open Tea.Html;
 
-open TypedSvg;
-open TypedSvg.PxUnits;
-
 /*MODEL
  */
 let init = () => 30;
@@ -58,8 +55,7 @@ module Styles = {
   let number = Css.style([fontSize(px(100))]);
 };
 
-let view_button = (title, msg) =>
-  button([onClick(msg)], [text(title)]);
+let view_button = (title, msg) => button([onClick(msg)], [text(title)]);
 
 let view = model =>
   div(
@@ -67,12 +63,7 @@ let view = model =>
     [
       header(
         [class'(Styles.header)],
-        [
-          h1(
-            [class'(Styles.headline)],
-            [text("BuckleScript Tea Starter Kit")],
-          ),
-        ],
+        [h1([class'(Styles.headline)], [text("Shannon Editor")])],
       ),
       nav(
         [class'(Styles.container)],
@@ -102,7 +93,25 @@ let view = model =>
           Graphic.translate(
             100.,
             100.,
-            Graphic.block(200., 60., float_of_int(model)),
+            [
+              BasicShape.block(
+                200.,
+                48.,
+                float_of_int(model),
+                List.assoc("motion", BlockStyles.styles),
+              ),
+            ],
+          ),
+          Graphic.translate(
+            400.,
+            100.,
+            [
+              BasicShape.hexagon(
+                200.,
+                40.,
+                List.assoc("motion", BlockStyles.styles),
+              ),
+            ],
           ),
         ],
       ),

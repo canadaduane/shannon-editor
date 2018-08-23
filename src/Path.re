@@ -3,10 +3,12 @@ type point = (float, float);
 type command =
   | MoveTo(float, float)
   | MoveToP(point)
-  | MoveToRel(point)
+  | MoveToRel(float, float)
+  | MoveToRelP(point)
   | LineTo(float, float)
   | LineToP(point)
-  | LineToRel(point)
+  | LineToRel(float, float)
+  | LineToRelP(point)
   | HorizontalTo(float)
   | HorizontalToRel(float)
   | VerticalTo(float)
@@ -19,7 +21,8 @@ type command =
   | QuadCurveToRel(point, point)
   | ShortQuadCurveTo(float, float)
   | ShortQuadCurveToP(point)
-  | ShortQuadCurveToRel(point)
+  | ShortQuadCurveToRel(float, float)
+  | ShortQuadCurveToRelP(point)
   | ArcTo(point, float, bool, bool, point)
   | ArcToRel(point, float, bool, bool, point)
   | Close;
@@ -30,11 +33,13 @@ let commandToString = (part: command) =>
   switch (part) {
   | MoveTo(x, y) => {j|M$(x),$(y)|j}
   | MoveToP((x, y)) => {j|M$(x),$(y)|j}
-  | MoveToRel((x, y)) => {j|m$(x),$(y)|j}
+  | MoveToRel(x, y) => {j|m$(x),$(y)|j}
+  | MoveToRelP((x, y)) => {j|m$(x),$(y)|j}
 
   | LineTo(x, y) => {j|L$(x),$(y)|j}
   | LineToP((x, y)) => {j|L$(x),$(y)|j}
-  | LineToRel((x, y)) => {j|l$(x),$(y)|j}
+  | LineToRel(x, y) => {j|l$(x),$(y)|j}
+  | LineToRelP((x, y)) => {j|l$(x),$(y)|j}
 
   | HorizontalTo(x) => {j|H$(x)|j}
   | HorizontalToRel(x) => {j|h$(x)|j}
@@ -53,7 +58,8 @@ let commandToString = (part: command) =>
 
   | ShortQuadCurveTo(x, y) => {j|T$(x),$(y)|j}
   | ShortQuadCurveToP((x, y)) => {j|T$(x),$(y)|j}
-  | ShortQuadCurveToRel((x, y)) => {j|t$(x),$(y)|j}
+  | ShortQuadCurveToRel(x, y) => {j|t$(x),$(y)|j}
+  | ShortQuadCurveToRelP((x, y)) => {j|t$(x),$(y)|j}
 
   | ArcTo((rx, ry), xAxisRotation, largeArc, sweep, (x, y)) =>
     let largeArcValue = if (largeArc) {1} else {0};
