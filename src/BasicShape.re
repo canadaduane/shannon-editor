@@ -51,9 +51,9 @@ let hexagon = (w, h, style) => {
   );
 };
 
-let block = (w, h, mouthHeight, style) => {
+let block = (w, headingHeight, mouthHeights, style) => {
   let unit = 8.0;
-  let hh = h /. 2.0;
+  let hh = headingHeight /. 2.0;
   let right = 7.0 *. unit +. w;
 
   /* Draw a connector tab */
@@ -70,33 +70,32 @@ let block = (w, h, mouthHeight, style) => {
     ];
   };
 
-  let optionalMouth =
-    if (mouthHeight > 0.0) {
-      Belt.List.concatMany([|
-        [
-          /* Top of Mouth */
-          HorizontalTo(8.0 *. unit),
-        ],
-        tabPath(Left),
-        [
-          /* Top of Mouth */
-          HorizontalTo(2.0 *. unit),
-          /* Left inner side */
-          VerticalToRel(mouthHeight),
-          /* Bottom of Mouth */
-          HorizontalTo(4.0 *. unit),
-        ],
-        tabPath(Right),
-        [
-          /* Bottom of Mouth */
-          HorizontalTo(right),
-          /* Right outer side */
-          VerticalToRel(4.0 *. unit),
-        ],
-      |]);
-    } else {
-      [];
-    };
+  let makeMouth = mouthHeight =>
+    Belt.List.concatMany([|
+      [
+        /* Top of Mouth */
+        HorizontalTo(8.0 *. unit),
+      ],
+      tabPath(Left),
+      [
+        /* Top of Mouth */
+        HorizontalTo(2.0 *. unit),
+        /* Left inner side */
+        VerticalToRel(mouthHeight),
+        /* Bottom of Mouth */
+        HorizontalTo(4.0 *. unit),
+      ],
+      tabPath(Right),
+      [
+        /* Bottom of Mouth */
+        HorizontalTo(right),
+        /* Right outer side */
+        VerticalToRel(4.0 *. unit),
+      ],
+    |]);
+
+  let optionalMouths =
+    Belt.List.flatten(mouthHeights->Belt.List.map(makeMouth));
 
   /* Block Outline */
   Tea.Svg.path(
@@ -116,7 +115,7 @@ let block = (w, h, mouthHeight, style) => {
             /* Right side */
             VerticalTo(hh),
           ],
-          optionalMouth,
+          optionalMouths,
           [
             /* Bottom */
             HorizontalTo(6.0 *. unit),

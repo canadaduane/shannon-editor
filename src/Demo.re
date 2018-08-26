@@ -97,7 +97,7 @@ let view = model =>
               BasicShape.block(
                 200.,
                 48.,
-                float_of_int(model),
+                [float_of_int(model), float_of_int(model)],
                 List.assoc("motion", BlockStyles.styles),
               ),
             ],
