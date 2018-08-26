@@ -9,6 +9,11 @@ type direction =
   | Left
   | Right;
 
+type mouth = {
+  openingHeight: float,
+  footlineHeight: float,
+};
+
 let dPath = (path: path) => TypedSvg.Attributes.d(pathToString(path));
 
 let pill = (x, y, w, h, style: blockStyle) =>
@@ -51,7 +56,7 @@ let hexagon = (w, h, style) => {
   );
 };
 
-let block = (w, headingHeight, mouthHeights, style) => {
+let block = (w, headingHeight, mouths: list(mouth), style) => {
   let unit = 8.0;
   let hh = headingHeight /. 2.0;
   let right = 7.0 *. unit +. w;
@@ -70,32 +75,40 @@ let block = (w, headingHeight, mouthHeights, style) => {
     ];
   };
 
-  let makeMouth = mouthHeight =>
-    Belt.List.concatMany([|
-      [
-        /* Top of Mouth */
-        HorizontalTo(8.0 *. unit),
-      ],
-      tabPath(Left),
-      [
-        /* Top of Mouth */
-        HorizontalTo(2.0 *. unit),
-        /* Left inner side */
-        VerticalToRel(mouthHeight),
-        /* Bottom of Mouth */
-        HorizontalTo(4.0 *. unit),
-      ],
-      tabPath(Right),
-      [
-        /* Bottom of Mouth */
-        HorizontalTo(right),
-        /* Right outer side */
-        VerticalToRel(4.0 *. unit),
-      ],
-    |]);
+  let makeMouth = ({openingHeight, footlineHeight}) =>
+    /* Only make the mouth if its heights are positive */
+    if (openingHeight > 0.0 && footlineHeight > 0.0) {
+      Some(
+        Belt.List.concatMany([|
+          [
+            /* Top of Mouth */
+            HorizontalTo(8.0 *. unit),
+          ],
+          tabPath(Left),
+          [
+            /* Top of Mouth */
+            HorizontalTo(2.0 *. unit),
+            /* Left inner side */
+            VerticalToRel(openingHeight),
+            /* Bottom of Mouth */
+            HorizontalTo(4.0 *. unit),
+          ],
+          tabPath(Right),
+          [
+            /* Bottom of Mouth */
+            HorizontalTo(right),
+            /* Right outer side */
+            /* VerticalToRel(4.0 *. unit), */
+            VerticalToRel(footlineHeight),
+          ],
+        |]),
+      );
+    } else {
+      None;
+    };
 
   let optionalMouths =
-    Belt.List.flatten(mouthHeights->Belt.List.map(makeMouth));
+    Belt.List.flatten(mouths->Belt.List.keepMap(makeMouth));
 
   /* Block Outline */
   Tea.Svg.path(

@@ -97,7 +97,13 @@ let view = model =>
               BasicShape.block(
                 200.,
                 48.,
-                [float_of_int(model), float_of_int(model)],
+                [
+                  {
+                    openingHeight: float_of_int(model) *. 2.,
+                    footlineHeight: 40.,
+                  },
+                  {openingHeight: float_of_int(model), footlineHeight: 80.},
+                ],
                 List.assoc("motion", BlockStyles.styles),
               ),
             ],
