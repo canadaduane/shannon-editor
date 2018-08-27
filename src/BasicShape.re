@@ -10,16 +10,39 @@ type direction =
   | Right;
 
 type mouth = {
+  /* Height of the open mouth */
   openingHeight: float,
+  /* Height of the bottom "jaw" of the mouth */
   footlineHeight: float,
 };
 
-let dPath = (path: path) => TypedSvg.Attributes.d(pathToString(path));
+/* Pixels per "unit", where a unit is a grid square in the scratch block design guidelines */
+let unit = 8.0;
 
+/* Helper: build an SVG "d" attribute from a path sequence */
+let dFromPath = (path: path) => TypedSvg.Attributes.d(pathToString(path));
+
+/* Helper: draw a connector tab */
+let tabPath = (dir: direction) => {
+  let mul =
+    switch (dir) {
+    | Left => (-1.0)
+    | Right => 1.0
+    };
+  [
+    LineToRel(unit *. mul, unit),
+    HorizontalToRel(unit *. 2.0 *. mul),
+    LineToRel(unit *. mul, -. unit),
+  ];
+};
+
+/* --- Basic Shapes --- */
+
+/* A "pill" is an oval shape with half-circles on each side */
 let pill = (x, y, w, h, style: blockStyle) =>
   Tea.Svg.path(
     [
-      dPath([
+      dFromPath([
         MoveTo(x, y),
         LineTo(x +. w, y),
         ArcTo((h /. 2.0, h /. 2.0), 0.0, false, true, (x +. w, y +. h)),
@@ -34,12 +57,13 @@ let pill = (x, y, w, h, style: blockStyle) =>
     [],
   );
 
+/* A "hexagon" is a 6-sided shape but can potentially be very long in the middle */
 let hexagon = (w, h, style) => {
   let hh = h /. 2.0;
 
   Tea.Svg.path(
     [
-      dPath([
+      dFromPath([
         MoveTo(0., 0.),
         LineToRel(hh, -. hh),
         HorizontalToRel(w -. h),
@@ -56,24 +80,10 @@ let hexagon = (w, h, style) => {
   );
 };
 
+/* Standard block with N "mouths" */
 let block = (w, headingHeight, mouths: list(mouth), style) => {
-  let unit = 8.0;
   let hh = headingHeight /. 2.0;
   let right = 7.0 *. unit +. w;
-
-  /* Draw a connector tab */
-  let tabPath = (dir: direction) => {
-    let mul =
-      switch (dir) {
-      | Left => (-1.0)
-      | Right => 1.0
-      };
-    [
-      LineToRel(unit *. mul, unit),
-      HorizontalToRel(unit *. 2.0 *. mul),
-      LineToRel(unit *. mul, -. unit),
-    ];
-  };
 
   let makeMouth = ({openingHeight, footlineHeight}) =>
     /* Only make the mouth if its heights are positive */
@@ -98,7 +108,6 @@ let block = (w, headingHeight, mouths: list(mouth), style) => {
             /* Bottom of Mouth */
             HorizontalTo(right),
             /* Right outer side */
-            /* VerticalToRel(4.0 *. unit), */
             VerticalToRel(footlineHeight),
           ],
         |]),
@@ -113,7 +122,7 @@ let block = (w, headingHeight, mouths: list(mouth), style) => {
   /* Block Outline */
   Tea.Svg.path(
     [
-      dPath(
+      dFromPath(
         Belt.List.concatMany([|
           [
             /* Start in Upper-Left Corner */
@@ -135,6 +144,85 @@ let block = (w, headingHeight, mouths: list(mouth), style) => {
           ],
           tabPath(Left),
           [
+            /* Bottom */
+            HorizontalTo(0.0),
+            /* Left side */
+            Close,
+          ],
+        |]),
+      ),
+      fill(Some(style.fill)),
+      stroke(Some(style.outline)),
+      strokeWidth(style.stroke),
+    ],
+    [],
+  );
+};
+
+let startBlock = (w, h, style) => {
+  let hh = h /. 2.0;
+  let right = 7.0 *. unit +. w;
+  let browHeight = 25.;
+  let browWidth = right *. (3. /. 5.);
+
+  /* Block Outline */
+  Tea.Svg.path(
+    [
+      dFromPath(
+        Belt.List.concatMany([|
+          [
+            /* Start in Upper-Left Corner */
+            MoveTo(0.0, -. hh),
+            CurveToRel(
+              (browHeight, -. browHeight),
+              (browWidth /. 4. *. 3., -. browHeight),
+              (browWidth, 0.0),
+            ),
+            /* Top */
+            HorizontalTo(right),
+            /* Right side */
+            VerticalTo(hh),
+            /* Bottom */
+            HorizontalTo(6.0 *. unit),
+          ],
+          tabPath(Left),
+          [
+            /* Bottom */
+            HorizontalTo(0.0),
+            /* Left side */
+            Close,
+          ],
+        |]),
+      ),
+      fill(Some(style.fill)),
+      stroke(Some(style.outline)),
+      strokeWidth(style.stroke),
+    ],
+    [],
+  );
+};
+
+let endBlock = (w, h, style) => {
+  let hh = h /. 2.0;
+  let right = 7.0 *. unit +. w;
+
+  /* Block Outline */
+  Tea.Svg.path(
+    [
+      dFromPath(
+        Belt.List.concatMany([|
+          [
+            /* Start in Upper-Left Corner */
+            MoveTo(0.0, -. hh),
+            /* Top */
+            HorizontalTo(2.0 *. unit),
+          ],
+          tabPath(Right),
+          [
+            /* Top */
+            HorizontalTo(right),
+            /* Right side */
+            VerticalTo(hh),
             /* Bottom */
             HorizontalTo(0.0),
             /* Left side */

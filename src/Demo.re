@@ -92,6 +92,17 @@ let view = model =>
         [
           Graphic.translate(
             100.,
+            100. -. 48.,
+            [
+              BasicShape.startBlock(
+                200.,
+                48.,
+                List.assoc("events", BlockStyles.styles),
+              ),
+            ],
+          ),
+          Graphic.translate(
+            100.,
             100.,
             [
               BasicShape.block(
@@ -105,6 +116,17 @@ let view = model =>
                   {openingHeight: float_of_int(model), footlineHeight: 80.},
                 ],
                 List.assoc("motion", BlockStyles.styles),
+              ),
+            ],
+          ),
+          Graphic.translate(
+            100.,
+            100. +. 48. +. 40. +. 80. +. float_of_int(model) *. 3.,
+            [
+              BasicShape.endBlock(
+                200.,
+                48.,
+                List.assoc("events", BlockStyles.styles),
               ),
             ],
           ),
