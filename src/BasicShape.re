@@ -30,9 +30,9 @@ let tabPath = (dir: direction) => {
     | Right => 1.0
     };
   [
-    LineToRel(unit *. mul, unit),
-    HorizontalToRel(unit *. 2.0 *. mul),
-    LineToRel(unit *. mul, -. unit),
+    LineToRel(BlockConfig.widthOfSnapRise *. mul, unit),
+    HorizontalToRel(BlockConfig.widthOfSnapCenter *. mul),
+    LineToRel(BlockConfig.widthOfSnapRise *. mul, -. unit),
   ];
 };
 
@@ -57,7 +57,7 @@ let pill = (x, y, w, h, style: blockStyle) =>
     [],
   );
 
-/* A "hexagon" is a 6-sided shape but can potentially be very long in the middle */
+/* A "hexagon" is a 6-sided shape but can potentially be horizontally very long */
 let hexagon = (w, h, style) => {
   let hh = h /. 2.0;
 
@@ -91,17 +91,20 @@ let block = (w, headingHeight, mouths: list(mouth), style) => {
       Some(
         Belt.List.concatMany([|
           [
-            /* Top of Mouth */
-            HorizontalTo(8.0 *. unit),
+            /* Top of Mouth, has 2x margin because tab is inset within mouth */
+            HorizontalTo(
+              BlockConfig.widthOfSnapMargin
+              +. BlockConfig.widthOfMarginPlusSnap,
+            ),
           ],
           tabPath(Left),
           [
             /* Top of Mouth */
-            HorizontalTo(2.0 *. unit),
+            HorizontalToRel(BlockConfig.widthOfSnapMargin *. (-1.)),
             /* Left inner side */
             VerticalToRel(openingHeight),
             /* Bottom of Mouth */
-            HorizontalTo(4.0 *. unit),
+            HorizontalToRel(BlockConfig.widthOfSnapMargin),
           ],
           tabPath(Right),
           [
@@ -128,7 +131,7 @@ let block = (w, headingHeight, mouths: list(mouth), style) => {
             /* Start in Upper-Left Corner */
             MoveTo(0.0, -. hh),
             /* Top */
-            HorizontalTo(2.0 *. unit),
+            HorizontalToRel(BlockConfig.widthOfSnapMargin),
           ],
           tabPath(Right),
           [
@@ -140,7 +143,7 @@ let block = (w, headingHeight, mouths: list(mouth), style) => {
           optionalMouths,
           [
             /* Bottom */
-            HorizontalTo(6.0 *. unit),
+            HorizontalTo(BlockConfig.widthOfMarginPlusSnap),
           ],
           tabPath(Left),
           [

@@ -1,8 +1,9 @@
+/* A "shape" is a thing that can be visually rendered */
 type shape =
   | Text(string)
   | Hexagon(list(shape))
   | Pill(list(shape));
-
+/* firstBlock, middleBlock, and lastBlock are generic snap-together blocks that can be visually rendered */
 type firstBlock = {
   headline: list(shape),
   body: list(middleBlock),
@@ -13,6 +14,8 @@ and middleBlock = {
   sections: list(section),
 }
 and lastBlock = {headline: list(shape)}
+/* A section is used by "middleBlock" to keep track of the attributes of its
+   "mouths" (e.g. for if/else blocks) */
 and section = {
   body: list(middleBlock),
   tail: option(lastBlock),
@@ -59,9 +62,9 @@ let sampleLayout: layout = (
 type dim = (float, float);
 
 type measuredShape =
-  | Text(dim, string)
-  | Hexagon(dim, list(measuredShape))
-  | Pill(dim, list(measuredShape));
+  | MText(dim, string)
+  | MHexagon(dim, list(measuredShape))
+  | MPill(dim, list(measuredShape));
 
 type measuredFirstBlock = {
   headline: (dim, list(measuredShape)),
@@ -87,7 +90,7 @@ type measuredLayout = (
 
 let sampleMeasuredLayout: measuredLayout = (
   Some({
-    headline: ((50., 20.), [Text((50., 20.), "start")]),
+    headline: ((50., 20.), [MText((50., 20.), "start")]),
     body: ((0., 0.), []),
     tail: ((0., 0.), None),
   }),
@@ -96,13 +99,13 @@ let sampleMeasuredLayout: measuredLayout = (
       headline: (
         (50., 20.),
         [
-          Text((20., 20.), "if"),
-          Hexagon(
+          MText((20., 20.), "if"),
+          MHexagon(
             (30., 20.),
             [
-              Pill((10., 20.), [Text((10., 20.), "x")]),
-              Text((10., 20.), "="),
-              Pill((10., 20.), [Text((10., 20.), "1")]),
+              MPill((10., 20.), [MText((10., 20.), "x")]),
+              MText((10., 20.), "="),
+              MPill((10., 20.), [MText((10., 20.), "1")]),
             ],
           ),
         ],
@@ -118,8 +121,8 @@ let sampleMeasuredLayout: measuredLayout = (
                   headline: (
                     (140., 20.),
                     [
-                      Text((120., 20.), "move forward"),
-                      Pill((20., 20.), [Text((20., 20.), "10")]),
+                      MText((120., 20.), "move forward"),
+                      MPill((20., 20.), [MText((20., 20.), "10")]),
                     ],
                   ),
                   sections: ((0., 0.), []),
@@ -128,9 +131,11 @@ let sampleMeasuredLayout: measuredLayout = (
             ),
             tail: (
               (40., 20.),
-              Some({headline: ((40., 20.), [Text((40., 20.), "done")])}),
+              Some({
+                headline: ((40., 20.), [MText((40., 20.), "done")]),
+              }),
             ),
-            footline: ((40., 20.), [Text((40., 20.), "else")]),
+            footline: ((40., 20.), [MText((40., 20.), "else")]),
           },
           {
             body: (
@@ -140,8 +145,8 @@ let sampleMeasuredLayout: measuredLayout = (
                   headline: (
                     (170., 20.),
                     [
-                      Text((150., 20.), "move backward"),
-                      Pill((20., 20.), [Text((20., 20.), "10")]),
+                      MText((150., 20.), "move backward"),
+                      MPill((20., 20.), [MText((20., 20.), "10")]),
                     ],
                   ),
                   sections: ((0., 0.), []),
@@ -155,7 +160,7 @@ let sampleMeasuredLayout: measuredLayout = (
       ),
     },
   ],
-  Some({headline: ((40., 20.), [Text((40., 20.), "Exit")])}),
+  Some({headline: ((40., 20.), [MText((40., 20.), "Exit")])}),
 );
 
 /* BasicShape.startBlock()

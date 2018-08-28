@@ -1,8 +1,5 @@
 open BlockTypes;
 
-let defaultSpacerWidth = 10.;
-let defaultTextHeight = 20.;
-let defaultShapeDims = (20., 30.);
 let estimateTextWidth = (text: string) => String.length(text) * 16;
 
 let sumWidthMaxHeight = ((w1, h1), (w2, h2)) => (w1 +. w2, max(h1, h2));
@@ -11,10 +8,13 @@ let maxWidthSumHeight = ((w1, h1), (w2, h2)) => (max(w1, w2), h1 +. h2);
 
 let rec getShapeDims = (shape: shape) =>
   switch (shape) {
-  | Text(s) => (float_of_int(estimateTextWidth(s)), defaultTextHeight)
-  | Hexagon([]) => defaultShapeDims
+  | Text(s) => (
+      float_of_int(estimateTextWidth(s)),
+      BlockConfig.defaultTextHeight,
+    )
+  | Hexagon([]) => BlockConfig.defaultShapeDims
   | Hexagon(shapes) => getShapeListDims(shapes)
-  | Pill([]) => defaultShapeDims
+  | Pill([]) => BlockConfig.defaultShapeDims
   | Pill(shapes) => getShapeListDims(shapes)
   }
 and getShapeListDims = (shapes: list(shape)) =>
@@ -61,6 +61,14 @@ let renderFirstBlock = (block: firstBlock) => {
   /* let bodyDims = getMiddleBlockListDims(block.body); */
   /* BasicShape.block(w, h, mouth, style); */
 };
+
+let renderLastBlock = (block: lastBlock) => ();
+
+/* let measureLastBlock = (block: lastBlock): measuredLastBlock => {
+     let style = List.assoc("motion", BlockStyles.styles);
+     let (shapesWidth, shapesHeight) = getShapeListDims(block.headline);
+     {headline: shapesWidth};
+   }; */
 /* Body Code Block */
 /* let body = (: list(slot), children: list(code)) => {
      let attrsWidth = getSlotDims(attrs);
