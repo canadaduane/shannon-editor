@@ -9,6 +9,7 @@ let widthOfMarginPlusSnap =
   widthOfSnapMargin +. widthOfSnapRise *. 2. +. widthOfSnapCenter;
 
 let defaultTextHeight = 20.;
-let defaultShapeDims = (20., 30.);
+let defaultBadgeDim = (50., 30.);
+let defaultBlockDim = (50., 30.);
 
 /* let defaultSpacerWidth = 10.; */

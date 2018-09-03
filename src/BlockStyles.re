@@ -99,3 +99,5 @@ let styles = [
     },
   ),
 ];
+
+let default = List.assoc("motion", styles);

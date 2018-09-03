@@ -1,167 +1,121 @@
-/* A "shape" is a thing that can be visually rendered */
-type shape =
-  | Text(string)
-  | Hexagon(list(shape))
-  | Pill(list(shape));
-/* firstBlock, middleBlock, and lastBlock are generic snap-together blocks that can be visually rendered */
-type firstBlock = {
-  headline: list(shape),
-  body: list(middleBlock),
-  tail: option(lastBlock),
-}
-and middleBlock = {
-  headline: list(shape),
-  sections: list(section),
-}
-and lastBlock = {headline: list(shape)}
-/* A section is used by "middleBlock" to keep track of the attributes of its
-   "mouths" (e.g. for if/else blocks) */
-and section = {
-  body: list(middleBlock),
-  tail: option(lastBlock),
-  footline: list(shape),
-};
-
-type layout = (option(firstBlock), list(middleBlock), option(lastBlock));
-
-let sampleLayout: layout = (
-  Some({headline: [Text("start")], body: [], tail: None}),
-  [
-    {
-      headline: [
-        Text("if"),
-        Hexagon([Pill([Text("x")]), Text("="), Pill([Text("1")])]),
-      ],
-      sections: [
-        {
-          body: [
-            {
-              headline: [Text("move forward"), Pill([Text("10")])],
-              sections: [],
-            },
-          ],
-          tail: Some({headline: [Text("done")]}),
-          footline: [Text("else")],
-        },
-        {
-          body: [
-            {
-              headline: [Text("move backward"), Pill([Text("10")])],
-              sections: [],
-            },
-          ],
-          tail: None,
-          footline: [],
-        },
-      ],
-    },
-  ],
-  Some({headline: [Text("Exit")]}),
-);
-
 type dim = (float, float);
+type size = ref(dim);
 
-type measuredShape =
-  | MText(dim, string)
-  | MHexagon(dim, list(measuredShape))
-  | MPill(dim, list(measuredShape));
+/* Measured Abstract Block Components */
+type badge =
+  | Hexagon(list(badge), size)
+  | Pill(list(badge), size)
+  | Text(string, size);
 
-type measuredFirstBlock = {
-  headline: (dim, list(measuredShape)),
-  body: (dim, list(measuredMiddleBlock)),
-  tail: (dim, option(measuredLastBlock)),
-}
-and measuredMiddleBlock = {
-  headline: (dim, list(measuredShape)),
-  sections: (dim, list(measuredSection)),
-}
-and measuredLastBlock = {headline: (dim, list(measuredShape))}
-and measuredSection = {
-  body: (dim, list(measuredMiddleBlock)),
-  tail: (dim, option(measuredLastBlock)),
-  footline: (dim, list(measuredShape)),
-};
+type blockLast =
+  | BlockLast(list(badge), size);
 
-type measuredLayout = (
-  option(measuredFirstBlock),
-  list(measuredMiddleBlock),
-  option(measuredLastBlock),
-);
+type blockMiddle =
+  | BlockMiddle(list(badge), list(blockMiddleSection), size)
+and blockMiddleSection =
+  | BlockMiddleSection(
+      list(badge),
+      list(blockMiddle),
+      option(blockLast),
+      size,
+    );
 
-let sampleMeasuredLayout: measuredLayout = (
-  Some({
-    headline: ((50., 20.), [MText((50., 20.), "start")]),
-    body: ((0., 0.), []),
-    tail: ((0., 0.), None),
-  }),
-  [
-    {
-      headline: (
-        (50., 20.),
+type blockFirst =
+  | BlockFirst(list(badge), size);
+
+type layout =
+  | Layout(option(blockFirst), list(blockMiddle), option(blockLast), size);
+
+/* Unmeasured Abstract Block Components */
+type ubadge =
+  | Hexagon(list(ubadge))
+  | Pill(list(ubadge))
+  | Text(string);
+
+type ublockLast =
+  | BlockLast(list(ubadge));
+
+type ublockMiddle =
+  | BlockMiddle(list(ubadge), list(ublockMiddleSection))
+and ublockMiddleSection =
+  | BlockMiddleSection(
+      list(ubadge),
+      list(ublockMiddle),
+      option(ublockLast),
+    );
+
+type ublockFirst =
+  | BlockFirst(list(ubadge));
+
+type ulayout =
+  | Layout(option(ublockFirst), list(ublockMiddle), option(ublockLast));
+
+/* Sample Layout (unmeasured) */
+let sampleLayout: ulayout =
+  Layout(
+    Some(BlockFirst([Text("start")])),
+    [
+      BlockMiddle(
         [
-          MText((20., 20.), "if"),
-          MHexagon(
-            (30., 20.),
+          Text("if"),
+          Hexagon([Pill([Text("x")]), Text("="), Pill([Text("1")])]),
+        ],
+        [
+          BlockMiddleSection(
+            [Text("else")],
             [
-              MPill((10., 20.), [MText((10., 20.), "x")]),
-              MText((10., 20.), "="),
-              MPill((10., 20.), [MText((10., 20.), "1")]),
+              BlockMiddle([Text("move forward"), Pill([Text("10")])], []),
+              BlockMiddle(
+                [Text("move backward"), Pill([Text("10")])],
+                [],
+              ),
             ],
+            Some(BlockLast([Text("done")])),
           ),
         ],
       ),
-      sections: (
-        (170., 100.),
-        [
-          {
-            body: (
-              (140., 60.),
-              [
-                {
-                  headline: (
-                    (140., 20.),
-                    [
-                      MText((120., 20.), "move forward"),
-                      MPill((20., 20.), [MText((20., 20.), "10")]),
-                    ],
-                  ),
-                  sections: ((0., 0.), []),
-                },
-              ],
-            ),
-            tail: (
-              (40., 20.),
-              Some({
-                headline: ((40., 20.), [MText((40., 20.), "done")]),
-              }),
-            ),
-            footline: ((40., 20.), [MText((40., 20.), "else")]),
-          },
-          {
-            body: (
-              (170., 20.),
-              [
-                {
-                  headline: (
-                    (170., 20.),
-                    [
-                      MText((150., 20.), "move backward"),
-                      MPill((20., 20.), [MText((20., 20.), "10")]),
-                    ],
-                  ),
-                  sections: ((0., 0.), []),
-                },
-              ],
-            ),
-            tail: ((0., 0.), None),
-            footline: ((0., 0.), []),
-          },
-        ],
-      ),
-    },
-  ],
-  Some({headline: ((40., 20.), [MText((40., 20.), "Exit")])}),
-);
+    ],
+    Some(BlockLast([Text("Exit")])),
+  );
 
-/* BasicShape.startBlock()
-   BasicShape.block(w, headingHeight, mouths: list(mouth), style) */
+let dimOfBadge = (badge: badge): dim => {
+  let size =
+    switch (badge) {
+    | Hexagon(_, size) => size
+    | Pill(_, size) => size
+    | Text(_, size) => size
+    };
+  size^;
+};
+
+let dimOfBlockLast = (block: blockLast): dim => {
+  let size =
+    switch (block) {
+    | BlockLast(_, size) => size
+    };
+  size^;
+};
+
+let dimOfBlockMiddle = (block: blockMiddle): dim => {
+  let size =
+    switch (block) {
+    | BlockMiddle(_, _, size) => size
+    };
+  size^;
+};
+
+let dimOfBlockMiddleSection = (block: blockMiddleSection): dim => {
+  let size =
+    switch (block) {
+    | BlockMiddleSection(_, _, _, size) => size
+    };
+  size^;
+};
+
+let dimOfBlockFirst = (block: blockFirst): dim => {
+  let size =
+    switch (block) {
+    | BlockFirst(_, size) => size
+    };
+  size^;
+};

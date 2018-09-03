@@ -57,6 +57,14 @@ module Styles = {
 
 let view_button = (title, msg) => button([onClick(msg)], [text(title)]);
 
+let badge1 =
+  BlockMeasure.measureBadge(
+    BlockTypes.Hexagon([BlockTypes.Hexagon([]), BlockTypes.Hexagon([])]),
+  );
+
+/* let () = [%bs.raw {| console.log("badge1", badge1) |}]; */
+let () = Js.log2("badge1", badge1);
+
 let view = model =>
   div(
     [],
@@ -89,59 +97,7 @@ let view = model =>
       Graphic.svgArea(
         800.,
         600.,
-        [
-          Graphic.translate(
-            100.,
-            100. -. 48.,
-            [
-              BasicShape.startBlock(
-                200.,
-                48.,
-                List.assoc("events", BlockStyles.styles),
-              ),
-            ],
-          ),
-          Graphic.translate(
-            100.,
-            100.,
-            [
-              BasicShape.block(
-                200.,
-                48.,
-                [
-                  {
-                    openingHeight: float_of_int(model) *. 2.,
-                    footlineHeight: 40.,
-                  },
-                  {openingHeight: float_of_int(model), footlineHeight: 80.},
-                ],
-                List.assoc("motion", BlockStyles.styles),
-              ),
-            ],
-          ),
-          Graphic.translate(
-            100.,
-            100. +. 48. +. 40. +. 80. +. float_of_int(model) *. 3.,
-            [
-              BasicShape.endBlock(
-                200.,
-                48.,
-                List.assoc("events", BlockStyles.styles),
-              ),
-            ],
-          ),
-          Graphic.translate(
-            400.,
-            100.,
-            [
-              BasicShape.hexagon(
-                200.,
-                40.,
-                List.assoc("motion", BlockStyles.styles),
-              ),
-            ],
-          ),
-        ],
+        [Graphic.translate(50., 50., BlockRender.renderBadge(badge1))],
       ),
     ],
   );
