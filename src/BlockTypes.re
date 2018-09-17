@@ -1,30 +1,65 @@
-type dim = (float, float);
-type size = ref(dim);
+type padding = {
+  top: float,
+  right: float,
+  bottom: float,
+  left: float,
+};
+
+let zeroPadding = {top: 0., right: 0., bottom: 0., left: 0.};
+let plusPadding = (p1: padding, p2: padding) => {
+  top: p1.top +. p2.top,
+  right: p1.right +. p2.right,
+  bottom: p1.bottom +. p2.bottom,
+  left: p1.left +. p2.left,
+};
+
+type dim = {
+  width: float,
+  height: float,
+};
+
+let zeroDim = {width: 0., height: 0.};
+
+type box = {
+  width: float,
+  height: float,
+  padding /* padding outside the box */
+};
+
+let zeroBox = {width: 0., height: 0., padding: zeroPadding};
+let boxWidthPadded = box => box.padding.left +. box.width +. box.padding.right;
+let boxHeightPadded = box =>
+  box.padding.top +. box.height +. box.padding.bottom;
 
 /* Measured Abstract Block Components */
 type badge =
-  | Hexagon(list(badge), size)
-  | Pill(list(badge), size)
-  | Text(string, size);
+  | Hexagon(list(badge), ref(box))
+  | Pill(list(badge), ref(box))
+  | Text(string, ref(box));
 
 type blockLast =
-  | BlockLast(list(badge), size);
+  | BlockLast(list(badge), ref(box));
 
 type blockMiddle =
-  | BlockMiddle(list(badge), list(blockMiddleSection), size)
+  | BlockMiddle(list(badge), list(blockMiddleSection), ref(box))
 and blockMiddleSection =
   | BlockMiddleSection(
       list(badge),
       list(blockMiddle),
       option(blockLast),
-      size,
+      ref(box),
     );
 
 type blockFirst =
-  | BlockFirst(list(badge), size);
+  | BlockFirst(list(badge), ref(box));
 
 type layout =
-  | Layout(option(blockFirst), list(blockMiddle), option(blockLast), size);
+  | Layout(
+      option(blockFirst),
+      list(blockMiddle),
+      option(blockLast),
+      ref(box),
+    );
 
 /* Unmeasured Abstract Block Components */
 type ubadge =
@@ -78,44 +113,67 @@ let sampleLayout: ulayout =
     Some(BlockLast([Text("Exit")])),
   );
 
-let dimOfBadge = (badge: badge): dim => {
-  let size =
+let dimOfBox = (box: box): dim => {width: box.width, height: box.height};
+
+let boxOfBadge = (badge: badge): box => {
+  let box =
     switch (badge) {
-    | Hexagon(_, size) => size
-    | Pill(_, size) => size
-    | Text(_, size) => size
+    | Hexagon(_, box) => box
+    | Pill(_, box) => box
+    | Text(_, box) => box
     };
-  size^;
+  box^;
 };
 
-let dimOfBlockLast = (block: blockLast): dim => {
-  let size =
-    switch (block) {
-    | BlockLast(_, size) => size
-    };
-  size^;
+let dimOfBadge = (badge: badge): dim => {
+  let box = boxOfBadge(badge);
+  {width: boxWidthPadded(box), height: boxHeightPadded(box)};
 };
 
-let dimOfBlockMiddle = (block: blockMiddle): dim => {
-  let size =
+let innerBadgesOfBadge = (badge: badge): list(badge) =>
+  switch (badge) {
+  | Hexagon(innerBadges, _) => innerBadges
+  | Pill(innerBadges, _) => innerBadges
+  | Text(_, _) => []
+  };
+
+let boxOfBlockLast = (block: blockLast): box => {
+  let box =
     switch (block) {
-    | BlockMiddle(_, _, size) => size
+    | BlockLast(_, box) => box
     };
-  size^;
+  box^;
 };
 
-let dimOfBlockMiddleSection = (block: blockMiddleSection): dim => {
-  let size =
+let dimOfBlockLast = (block: blockLast): dim =>
+  block->boxOfBlockLast->dimOfBox;
+
+let boxOfBlockMiddle = (block: blockMiddle): box => {
+  let box =
     switch (block) {
-    | BlockMiddleSection(_, _, _, size) => size
+    | BlockMiddle(_, _, box) => box
     };
-  size^;
+  box^;
 };
 
-let dimOfBlockFirst = (block: blockFirst): dim => {
-  let size =
+let dimOfBlockMiddle = (block: blockMiddle): dim =>
+  block->boxOfBlockMiddle->dimOfBox;
+
+let boxOfBlockMiddleSection = (block: blockMiddleSection): box => {
+  let box =
     switch (block) {
-    | BlockFirst(_, size) => size
+    | BlockMiddleSection(_, _, _, box) => box
     };
-  size^;
+  box^;
+};
+
+let dimOfBlockMiddleSection = (block: blockMiddleSection): dim =>
+  block->boxOfBlockMiddleSection->dimOfBox;
+
+let boxOfBlockFirst = (block: blockFirst): box => {
+  let box =
+    switch (block) {
+    | BlockFirst(_, box) => box
+    };
+  box^;
 };

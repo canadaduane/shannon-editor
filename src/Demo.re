@@ -30,7 +30,7 @@ let update = model =>
 Css.(
   global(
     "body",
-    [padding(px(0)), margin(px(0)), backgroundColor(white)],
+    [padding(px(0)), margin(px(0)), backgroundColor(rgb(60, 60, 60))],
   )
 );
 
@@ -49,7 +49,7 @@ module Styles = {
     Css.style([
       display(flexBox),
       justifyContent(center),
-      backgroundColor(white),
+      backgroundColor(rgb(60, 60, 60)),
       margin(px(20)),
     ]);
   let number = Css.style([fontSize(px(100))]);

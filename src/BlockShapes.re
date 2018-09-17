@@ -39,15 +39,15 @@ let tabPath = (dir: direction) => {
 /* --- Basic Shapes --- */
 
 /* A "pill" is an oval shape with half-circles on each side */
-let pill = (x, y, w, h, style: blockStyle) =>
+let pill = (w, h, style: blockStyle) =>
   Tea.Svg.path(
     [
       dFromPath([
-        MoveTo(x, y),
-        LineTo(x +. w, y),
-        ArcTo((h /. 2.0, h /. 2.0), 0.0, false, true, (x +. w, y +. h)),
-        LineTo(x, y +. h),
-        ArcTo((h /. 2.0, h /. 2.0), 0.0, false, true, (x, y)),
+        MoveTo(0., 0.),
+        LineToRel(w, 0.),
+        ArcToRel((h /. 2.0, h /. 2.0), 0.0, false, true, (w, h)),
+        LineToRel(0., h),
+        ArcToRel((h /. 2.0, h /. 2.0), 0.0, false, true, (0., 0.)),
         Close,
       ]),
       fill(Some(style.fill)),
@@ -60,16 +60,17 @@ let pill = (x, y, w, h, style: blockStyle) =>
 /* A "hexagon" is a 6-sided shape but can potentially be horizontally very long */
 let hexagon = (w, h, style) => {
   let hh = h /. 2.0;
+  let innerWidth = w -. h;
 
   Tea.Svg.path(
     [
       dFromPath([
         MoveTo(0., 0.),
         LineToRel(hh, -. hh),
-        HorizontalToRel(w -. h),
+        HorizontalToRel(innerWidth),
         LineToRel(hh, hh),
         LineToRel(-. hh, hh),
-        HorizontalToRel(-. (w -. h)),
+        HorizontalToRel(-. innerWidth),
         Close,
       ]),
       fill(Some(style.fill)),
