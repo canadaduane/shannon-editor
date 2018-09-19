@@ -6,5 +6,5 @@
 npm-debug.log
 /lib/bs/
 /dist/bundle.js
-/src/*.bs.js
+*.bs.js
 /node_modules/
