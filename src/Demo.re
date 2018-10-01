@@ -27,10 +27,11 @@ let update = model =>
  VIEW
   */
 /* Global Style Example */
+let bgColor = Css.rgb(255, 255, 255);
 Css.(
   global(
     "body",
-    [padding(px(0)), margin(px(0)), backgroundColor(rgb(60, 60, 60))],
+    [padding(px(0)), margin(px(0)), backgroundColor(bgColor)],
   )
 );
 
@@ -49,7 +50,7 @@ module Styles = {
     Css.style([
       display(flexBox),
       justifyContent(center),
-      backgroundColor(rgb(60, 60, 60)),
+      backgroundColor(bgColor),
       margin(px(20)),
     ]);
   let number = Css.style([fontSize(px(100))]);
@@ -59,7 +60,7 @@ let view_button = (title, msg) => button([onClick(msg)], [text(title)]);
 
 let badge1 =
   BlockMeasure.measureBadge(
-    BlockTypes.Hexagon([BlockTypes.Hexagon([]), BlockTypes.Hexagon([])]),
+    BlockTypes.Hexagon([BlockTypes.Pill([]), BlockTypes.Hexagon([])]),
   );
 
 /* let () = [%bs.raw {| console.log("badge1", badge1) |}]; */
