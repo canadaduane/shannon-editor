@@ -1,7 +1,8 @@
-open TypedSvg.Attributes;
-
-open TypedSvg.PxUnits;
-
+module A = {
+  let fill = TypedSvg.Attributes.fill;
+  let stroke = TypedSvg.Attributes.stroke;
+  let strokeWidth = TypedSvg.PxUnits.strokeWidth;
+};
 open BlockStyles;
 open Path;
 
@@ -39,25 +40,27 @@ let tabPath = (dir: direction) => {
 /* --- Basic Shapes --- */
 
 /* A "pill" is an oval shape with half-circles on each side */
-let pill = (w, h, style: blockStyle) =>
+let pill = (w: float, h: float, style: blockStyle) => {
+  let w' = max(w, h);
   Utils.Float.(
     Tea.Svg.path(
       [
         dFromPath([
-          MoveTo(0., 0.),
-          LineToRel(w, 0.),
-          ArcToRel((h / 2.0, h / 2.0), 0.0, false, true, (w, h)),
-          LineToRel(0., h),
-          ArcToRel((h / 2.0, h / 2.0), 0.0, false, true, (0., 0.)),
+          MoveTo(h / 2., - h / 2.),
+          HorizontalToRel(w - h),
+          ArcToRel((h / 2.0, h / 2.0), 0.0, false, true, (0., h)),
+          HorizontalToRel(- (w - h)),
+          ArcToRel((h / 2.0, h / 2.0), 0.0, false, true, (0., - h)),
           Close,
         ]),
-        fill(Some(style.fill)),
-        stroke(Some(style.outline)),
-        strokeWidth(style.stroke),
+        A.fill(Some(style.fill)),
+        A.stroke(Some(style.outline)),
+        A.strokeWidth(style.stroke),
       ],
       [],
     )
   );
+};
 
 /* A "hexagon" is a 6-sided shape but can potentially be horizontally very long */
 let hexagon = (w, h, style) => {
@@ -76,9 +79,9 @@ let hexagon = (w, h, style) => {
         HorizontalToRel(- innerWidth),
         Close,
       ]),
-      fill(Some(style.fill)),
-      stroke(Some(style.outline)),
-      strokeWidth(style.stroke),
+      A.fill(Some(style.fill)),
+      A.stroke(Some(style.outline)),
+      A.strokeWidth(style.stroke),
     ],
     [],
   );
@@ -158,9 +161,9 @@ let block = (w, headingHeight, mouths: list(mouth), style) => {
           ],
         |]),
       ),
-      fill(Some(style.fill)),
-      stroke(Some(style.outline)),
-      strokeWidth(style.stroke),
+      A.fill(Some(style.fill)),
+      A.stroke(Some(style.outline)),
+      A.strokeWidth(style.stroke),
     ],
     [],
   );
@@ -203,9 +206,9 @@ let startBlock = (w, h, style) => {
           ],
         |]),
       ),
-      fill(Some(style.fill)),
-      stroke(Some(style.outline)),
-      strokeWidth(style.stroke),
+      A.fill(Some(style.fill)),
+      A.stroke(Some(style.outline)),
+      A.strokeWidth(style.stroke),
     ],
     [],
   );
@@ -241,9 +244,9 @@ let endBlock = (w, h, style) => {
           ],
         |]),
       ),
-      fill(Some(style.fill)),
-      stroke(Some(style.outline)),
-      strokeWidth(style.stroke),
+      A.fill(Some(style.fill)),
+      A.stroke(Some(style.outline)),
+      A.strokeWidth(style.stroke),
     ],
     [],
   );
