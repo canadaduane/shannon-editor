@@ -1,16 +1,18 @@
 open BlockTypes;
 
+module Float = Utils.Float;
+
 let estimateTextWidth = (text: string): float =>
   float_of_int(String.length(text) * 16);
 
 let sumWidthMaxHeight = (dim1: dim, dim2: dim) => {
-  width: dim1.width +. dim2.width,
+  width: Float.(dim1.width + dim2.width),
   height: max(dim1.height, dim2.height),
 };
 
 let maxWidthSumHeight = (dim1: dim, dim2: dim) => {
   width: max(dim1.width, dim2.width),
-  height: dim1.height +. dim2.height,
+  height: Float.(dim1.height + dim2.height),
 };
 
 let mkBoxFromDim = (dim: dim): box => {

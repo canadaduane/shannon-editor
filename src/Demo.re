@@ -106,8 +106,3 @@ let view = model =>
  MAIN
  */
 let main = beginnerProgram({model: init(), update, view});
-
-/*
- EXAMPLE CONSOLE LOG (using BuckleScripts Js module)
-  */
-Js.log("Hello, BuckleScript and Reason!");

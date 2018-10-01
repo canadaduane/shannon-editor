@@ -1,5 +1,8 @@
 open BlockTypes;
 
+module BuiltinList = List;
+module List = Belt.List;
+
 let getBadgesAndBox = (badge: badge) =>
   switch (badge) {
   | Hexagon(innerBadges, box) => (innerBadges, box^)
@@ -9,19 +12,18 @@ let getBadgesAndBox = (badge: badge) =>
 
 /* open BlockMeasure; */
 let renderBadge = (badge: badge): list(Vdom.t('msg)) => {
-  let style = List.assoc("motion", BlockStyles.styles);
+  let style = BuiltinList.assoc("motion", BlockStyles.styles);
 
   let rec loop = (x: float, badge: badge): list(Vdom.t('msg)) => {
     let (innerBadges, box) = getBadgesAndBox(badge);
 
     let addLeftPadding = (pos, box) => box.padding.left +. pos;
-    let boxes = innerBadges->Belt.List.map(boxOfBadge);
-    let widths = boxes->Belt.List.map(boxWidthPadded);
+    let boxes = innerBadges->List.map(boxOfBadge);
+    let widths = boxes->List.map(boxWidthPadded);
     let positions =
-      addLeftPadding
-      |> Belt.List.zipBy([x, ...Utils.cumuSum(widths)], boxes);
+      addLeftPadding |> List.zipBy([x, ...Utils.cumuSum(widths)], boxes);
 
-    let renderedInnerBadges = loop |> Belt.List.zipBy(positions, innerBadges);
+    let renderedInnerBadges = loop |> List.zipBy(positions, innerBadges);
 
     let element =
       switch (badge) {
@@ -30,9 +32,9 @@ let renderBadge = (badge: badge): list(Vdom.t('msg)) => {
       | Text(_, _) => BlockShapes.pill(10., 10., style)
       };
 
-    Belt.List.concat(
+    List.concat(
       [Graphic.translate(x, 0., [element])],
-      renderedInnerBadges->Belt.List.flatten,
+      renderedInnerBadges->List.flatten,
     );
   };
   loop(0., badge);

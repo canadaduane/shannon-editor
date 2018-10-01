@@ -8,3 +8,11 @@ let cumuSum = (nums: list(float)): list(float) => {
     };
   loop(nums, 0.);
 };
+
+module Float = {
+  let (+) = (+.);
+  let (-) = (-.);
+  let ( * ) = ( *. );
+  let (/) = (/.);
+  let (~-) = (~-.);
+};
