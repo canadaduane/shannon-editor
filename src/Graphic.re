@@ -9,6 +9,12 @@ let svgAreaProportional =
       TypedSvg.PxUnits.width(width),
       TypedSvg.PxUnits.height(height),
       viewBox(0., 0., maxX, maxY),
+      class'(
+        Css.style([
+          Css.border(Css.px(1), `dashed, Css.rgb(99, 99, 99)),
+          Css.overflowY(`scroll),
+        ]),
+      ),
     ],
     children,
   );

@@ -1,32 +1,45 @@
-open BlockTypes;
+open BlockM;
 
 module BuiltinList = List;
 module List = Belt.List;
 
-let getBadgesAndBox = (badge: badge) =>
-  switch (badge) {
-  | Hexagon(innerBadges, box) => (innerBadges, box^)
-  | Pill(innerBadges, box) => (innerBadges, box^)
+let getTagsAndBox = (mtag: tag) =>
+  switch (mtag) {
+  | Hexagon(childTags, box) => (childTags, box^)
+  | Pill(childTags, box) => (childTags, box^)
   | Text(_string, box) => ([], box^)
   };
 
 /* open BlockMeasure; */
-let renderBadge = (badge: badge): list(Vdom.t('msg)) => {
+let renderBadge = (mtag: tag): list(Vdom.t('msg)) => {
   let style = BuiltinList.assoc("motion", BlockStyles.styles);
 
-  let rec loop = (x: float, badge: badge): list(Vdom.t('msg)) => {
-    let (innerBadges, box) = getBadgesAndBox(badge);
+  let rec loop = (x: float, mtag: tag): list(Vdom.t('msg)) => {
+    let (childTags, box) = getTagsAndBox(mtag);
+    /* Js.log3("box", box.width, box.margin.left); */
 
-    let addLeftPadding = (pos, box) => box.padding.left +. pos;
-    let boxes = innerBadges->List.map(boxOfBadge);
-    let widths = boxes->List.map(boxWidthPadded);
-    let positions =
-      addLeftPadding |> List.zipBy([x, ...Utils.cumuSum(widths)], boxes);
+    let boxes = childTags->List.map(Tag.getBox);
+    let widths = boxes->List.map(Box.outerWidth);
+    let positions = [x, ...Utils.cumuSum(widths)];
 
-    let renderedInnerBadges = loop |> List.zipBy(positions, innerBadges);
+    let addLeftMargin = (pos: float, box: box) => box.margin.left +. pos;
+    let positionsPlusMargins: list(float) =
+      List.zipBy(positions, boxes, addLeftMargin);
+    /* Js.Console.log3(
+         "margin",
+         box.margin.left,
+         switch (mtag) {
+         | Pill(_) => "pill"
+         | Hexagon(_) => "hexagon"
+         | Text(_) => "text"
+         },
+       ); */
+
+    let renderedInnerBadges =
+      loop |> List.zipBy(positionsPlusMargins, childTags);
 
     let element =
-      switch (badge) {
+      switch (mtag) {
       | Hexagon(_, _) => BlockShapes.hexagon(box.width, box.height, style)
       | Pill(_, _) => BlockShapes.pill(box.width, box.height, style)
       | Text(_, _) => BlockShapes.pill(10., 10., style)
@@ -37,5 +50,5 @@ let renderBadge = (badge: badge): list(Vdom.t('msg)) => {
       renderedInnerBadges->List.flatten,
     );
   };
-  loop(0., badge);
+  loop(0., mtag);
 };

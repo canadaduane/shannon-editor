@@ -2,30 +2,6 @@ open Tea.App;
 
 open Tea.Html;
 
-/*MODEL
- */
-let init = () => 30;
-
-/*
- UPDATE
- */
-[@bs.deriving {accessors: accessors}]
-type msg =
-  | Increment
-  | Decrement
-  | Reset
-  | Set(int);
-
-let update = model =>
-  fun
-  | Increment => model + 20
-  | Decrement => model - 20
-  | Reset => 0
-  | Set(v) => v;
-
-/*
- VIEW
-  */
 /* Global Style Example */
 let bgColor = Css.rgb(255, 255, 255);
 Css.(
@@ -52,21 +28,22 @@ module Styles = {
       justifyContent(center),
       backgroundColor(bgColor),
       margin(px(20)),
+      border(px(2), `solid, rgb(100, 100, 100)),
     ]);
-  let number = Css.style([fontSize(px(100))]);
 };
 
-let view_button = (title, msg) => button([onClick(msg)], [text(title)]);
-
-let badge1 =
-  BlockMeasure.measureBadge(
-    BlockTypes.Hexagon([BlockTypes.Pill([]), BlockTypes.Hexagon([])]),
+let tagText = Measure.Tag.measure(BlockU.Text("a tag"));
+let tagPill = Measure.Tag.measure(BlockU.Pill([]));
+let tagHexagon = Measure.Tag.measure(BlockU.Hexagon([]));
+let tagRecurse1 =
+  Measure.Tag.measure(
+    BlockU.Hexagon([BlockU.Pill([]), BlockU.Hexagon([])]),
   );
 
 /* let () = [%bs.raw {| console.log("badge1", badge1) |}]; */
-let () = Js.log2("badge1", badge1);
+/* let () = Js.log2("badge1", badge1); */
 
-let view = model =>
+let view = _model =>
   div(
     [],
     [
@@ -74,36 +51,31 @@ let view = model =>
         [class'(Styles.header)],
         [h1([class'(Styles.headline)], [text("Shannon Editor")])],
       ),
-      nav(
-        [class'(Styles.container)],
-        [
-          br([]),
-          view_button("Increment", Increment),
-          br([]),
-          view_button("Decrement", Decrement),
-          br([]),
-          view_button("Set to 60", Set(60)),
-          br([]),
-          if (model != 0) {
-            view_button("Reset", Reset);
-          } else {
-            noNode;
-          },
-        ],
-      ),
       div(
         [class'(Styles.container)],
-        [span([class'(Styles.number)], [text(string_of_int(model))])],
-      ),
-      Graphic.svgArea(
-        800.,
-        600.,
-        [Graphic.translate(50., 50., BlockRender.renderBadge(badge1))],
+        [
+          Graphic.svgArea(
+            800.,
+            600.,
+            [
+              Graphic.translate(50., 50., BlockRender.renderBadge(tagText)),
+              Graphic.translate(50., 100., BlockRender.renderBadge(tagPill)),
+              Graphic.translate(
+                50.,
+                150.,
+                BlockRender.renderBadge(tagHexagon),
+              ),
+              Graphic.translate(
+                50.,
+                200.,
+                BlockRender.renderBadge(tagRecurse1),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );
 
-/*
- MAIN
- */
-let main = beginnerProgram({model: init(), update, view});
+let update = (_i: int, _j: int) => 0;
+let main = beginnerProgram({model: 0, update, view});

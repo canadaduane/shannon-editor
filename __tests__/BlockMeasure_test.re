@@ -9,15 +9,15 @@ module C = BlockConfig;
 
 describe("measureBadge", () => {
   test("one hexagon", () => {
-    let ubadge: ubadge = Hexagon([]);
-    let badge: badge = measureBadge(ubadge);
+    let badge: badge = Hexagon([]);
+    let badge: badge = measureBadge(badge);
     let expectedBadge: badge = Hexagon([], ref(C.defaultBadgeBox));
     expect(badge) |> toEqual(expectedBadge);
   });
 
   test("two hexagons in a hexagon", () => {
-    let ubadge: ubadge = Hexagon([Hexagon([]), Hexagon([])]);
-    let badge: badge = measureBadge(ubadge);
+    let badge: badge = Hexagon([Hexagon([]), Hexagon([])]);
+    let badge: badge = measureBadge(badge);
     let expectedBadge: badge =
       Hexagon(
         [

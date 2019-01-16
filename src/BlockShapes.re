@@ -47,9 +47,9 @@ let pill = (w: float, h: float, style: blockStyle) => {
       [
         dFromPath([
           MoveTo(h / 2., - h / 2.),
-          HorizontalToRel(w - h),
+          HorizontalToRel(w' - h),
           ArcToRel((h / 2.0, h / 2.0), 0.0, false, true, (0., h)),
-          HorizontalToRel(- (w - h)),
+          HorizontalToRel(- (w' - h)),
           ArcToRel((h / 2.0, h / 2.0), 0.0, false, true, (0., - h)),
           Close,
         ]),
