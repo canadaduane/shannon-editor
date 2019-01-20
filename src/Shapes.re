@@ -3,7 +3,7 @@ module A = {
   let stroke = TypedSvg.Attributes.stroke;
   let strokeWidth = TypedSvg.PxUnits.strokeWidth;
 };
-open BlockStyles;
+open BlockStyle;
 open Path;
 
 type direction =
@@ -38,6 +38,18 @@ let tabPath = (dir: direction) => {
 };
 
 /* --- Basic Shapes --- */
+
+let text = (~color="#f5f5f5", t: string) =>
+  Tea.Svg.text'(
+    [
+      TypedSvg.Attributes.alignmentBaseline("middle"),
+      TypedSvg.Attributes.color("white"),
+      Tea.Svg.Attributes.style("font-family: arial; font-size: 20px"),
+      A.fill(Some(TypedSvg.Types.Color(color))),
+      /* A.stroke(Some(style.outline)), */
+    ],
+    [Tea.Svg.text(t)],
+  );
 
 /* A "pill" is an oval shape with half-circles on each side */
 let pill = (w: float, h: float, style: blockStyle) => {

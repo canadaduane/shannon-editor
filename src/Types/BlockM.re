@@ -3,6 +3,8 @@
 
 type box = Box.t;
 
+type style = BlockStyle.t;
+
 type tag =
   | Text(string, ref(box))
   | Pill(list(tag), ref(box))
@@ -10,6 +12,16 @@ type tag =
 module Tag = {
   /* Measured Abstract Block Components */
   type t = tag;
+
+  let setBox = (tag: t, newBox: box): unit => {
+    let boxRef =
+      switch (tag) {
+      | Hexagon(_, box) => box
+      | Pill(_, box) => box
+      | Text(_, box) => box
+      };
+    boxRef := newBox;
+  };
 
   let getBox = (tag: t): box => {
     let boxRef =

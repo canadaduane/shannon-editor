@@ -14,7 +14,7 @@ let defaultTagHeight = unit *. 5.;
 let defaultBlockWidth = unit *. 14.;
 let defaultBlockHeight = unit *. 5.;
 
-let defaultMarginLeftRight = unit;
+let defaultMarginLeftRight = 0.;
 let defaultMarginTopBottom = unit;
 let defaultMargin: Margin.t = {
   top: defaultMarginTopBottom,

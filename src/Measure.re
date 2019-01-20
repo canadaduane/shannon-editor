@@ -1,5 +1,4 @@
-let estimateTextWidth = (text: string): float =>
-  float_of_int(String.length(text) * 16);
+module List = Belt.List;
 
 let mkBox =
     (~margin=BlockConfig.defaultMargin, width: float, height: float): Box.t => {
@@ -15,80 +14,105 @@ let defaultBlockBox =
 let defaultTagBox =
   mkBox(BlockConfig.defaultTagWidth, BlockConfig.defaultTagHeight);
 
-type tagType =
-  | Hex
-  | Pil
-  | Txt;
-
-type tagPosition =
-  | Only
-  | First
-  | Middle
-  | Last;
-
-let adjustPadding =
-    (parent: tagType, child: tagType, position: tagPosition): Margin.t => {
-  let u = BlockConfig.unit;
-  let (left, right) =
-    switch (parent, child, position) {
-    | (Hex, Hex, Only) => (u, u)
-    | (Hex, Pil, Only) => (u, u)
-    | (Hex, Txt, Only) => (u, u)
-    | (Hex, Hex, First) => (u, u)
-    | (Hex, Pil, First) => (u, u)
-    | (Hex, Txt, First) => (u, u)
-    | (Hex, Hex, Middle) => (u, u)
-    | (Hex, Pil, Middle) => (u, u)
-    | (Hex, Txt, Middle) => (u, u)
-    | (Hex, Hex, Last) => (u, u)
-    | (Hex, Pil, Last) => (u, u)
-    | (Hex, Txt, Last) => (u, u)
-    | (Pil, Hex, Only) => (u, u)
-    | (Pil, Pil, Only) => (u, u)
-    | (Pil, Txt, Only) => (u, u)
-    | (Pil, Hex, First) => (u, u)
-    | (Pil, Pil, First) => (u, u)
-    | (Pil, Txt, First) => (u, u)
-    | (Pil, Hex, Middle) => (u, u)
-    | (Pil, Pil, Middle) => (u, u)
-    | (Pil, Txt, Middle) => (u, u)
-    | (Pil, Hex, Last) => (u, u)
-    | (Pil, Pil, Last) => (u, u)
-    | (Pil, Txt, Last) => (u, u)
-    | (Txt, _, _) => (u, u)
-    };
-  let margin = {
-    ...BlockConfig.defaultMargin,
-    left: BlockConfig.defaultMargin.left,
-  };
-  /* Js.Console.log2("margin", margin); */
-  margin;
-};
-
 module Tag = {
+  type tagType =
+    | Hex
+    | Pil
+    | Txt;
+
+  type tagPosition =
+    | Only
+    | First
+    | Middle
+    | Last;
+
+  let tag2tagType = (tag: BlockU.tag): tagType =>
+    switch (tag) {
+    | Text(_) => Txt
+    | Pill(_) => Pil
+    | Hexagon(_) => Hex
+    };
+
+  /* Child tags need custom margins, depending on their shape and what surrounds them. */
+  let computeVisuallyAppealingMarginDelta =
+      (parent: tagType, child: tagType, childPosition: tagPosition): Margin.t => {
+    let u = BlockConfig.unit;
+    let (left, right) =
+      switch (parent, child, childPosition) {
+      | (Hex, Txt, Only) => (u *. 2., u *. 2.)
+      | (Hex, Pil, Only) => (u *. 2.5, u *. 2.5)
+      | (Hex, Hex, Only) => (u *. 1.5, u *. 1.5)
+      | (Hex, Pil, First) => (u *. 3., u)
+      | (Hex, Pil, First) => (u *. 3., 0.)
+      | (Hex, Pil, Last) => (0., u *. 2.5)
+      | (Hex, Hex, First) => (u *. 1.5, u)
+      | (Hex, Hex, Last) => (0., u *. 1.5)
+      | (Pil, Txt, First) => (u *. 2., 0.)
+      | (_, _, Middle) => (0., u)
+      | (_, _, _) => (u, u)
+      };
+    {top: 0., bottom: 0., left, right};
+  };
+
+  let idx2tagPosition = (i, total) =>
+    switch (i, total) {
+    | (_, 1) => Only
+    | (0, _) => First
+    | (p, l) when p == l - 1 => Last
+    | (_, _) => Middle
+    };
+
+  let computeMarginDeltas = (tag, childTags) =>
+    List.mapWithIndex(childTags, (i, childTag) =>
+      computeVisuallyAppealingMarginDelta(
+        tag2tagType(tag),
+        tag2tagType(childTag),
+        idx2tagPosition(i, List.length(childTags)),
+      )
+    );
+
   /* Given an unmeasured badge, measure it & return a measured badge */
   let rec measure = (tag: BlockU.tag): BlockM.tag =>
     switch (tag) {
     | Text(str) =>
-      let width = estimateTextWidth(str);
+      let width = TextWidth.estimate(str);
       let height = BlockConfig.defaultTextHeight;
+      /* let margin = adjustedMargin(); */
       Text(str, ref(mkBox(width, height)));
     | Hexagon([]) => Hexagon([], ref(defaultTagBox))
-    | Hexagon(tags) =>
-      let (mtags, dim) = measureList(tags);
-      /* let adjustedBadges = adjustPadding(Hex, badges); */
+    | Hexagon(childTags) =>
+      let marginDeltas = computeMarginDeltas(tag, childTags);
+      let (mtags, dim) = measureList(~marginDeltas, childTags);
       Hexagon(mtags, ref(mkBoxFromDim(dim)));
     | Pill([]) => Pill([], ref(defaultTagBox))
-    | Pill(tags) =>
-      let (mtags, dim) = measureList(tags);
+    | Pill(childTags) =>
+      let marginDeltas = computeMarginDeltas(tag, childTags);
+      let (mtags, dim) = measureList(~marginDeltas, childTags);
       Pill(mtags, ref(mkBoxFromDim(dim)));
     }
-  and measureList = (tags: list(BlockU.tag)): (list(BlockM.tag), Dim.t) => {
-    let mtags = tags->Belt.List.map(measure);
+  and measureList =
+      (~marginDeltas=[], tags: list(BlockU.tag)): (list(BlockM.tag), Dim.t) => {
+    let mtags =
+      if (List.length(marginDeltas) == 0) {
+        tags->List.map(measure);
+      } else {
+        tags
+        ->List.zip(marginDeltas)
+        ->List.map(((m, marginDelta)) => {
+            let mtag = measure(m);
+            let box = BlockM.Tag.getBox(mtag);
+            let newBox = {
+              ...box,
+              margin: Margin.add(box.margin, marginDelta),
+            };
+            BlockM.Tag.setBox(mtag, newBox);
+            mtag;
+          });
+      };
     let combinedDimensions =
       mtags
-      ->Belt.List.map(BlockM.Tag.getDim)
-      ->Belt.List.reduce(Dim.zero, Dim.sumWidthMaxHeight);
+      ->List.map(BlockM.Tag.getDim)
+      ->List.reduce(Dim.zero, Dim.sumWidthMaxHeight);
     (mtags, combinedDimensions);
   };
 };
@@ -124,7 +148,7 @@ module Middle = {
       let (mtags, mtagsDim) = Tag.measureList(tags);
       let (msections, msectionsDim) = measureSectionList(sections);
       let dim = Dim.maxWidthSumHeight(mtagsDim, msectionsDim);
-      Middle(mtags, msections, ref(mkBoxFromDim(mtagsDim)));
+      Middle(mtags, msections, ref(mkBoxFromDim(dim)));
     }
   /* Given an unmeasured blockMiddleSection (blockMiddleSection), build a measured blockMiddleSection */
   and measureSection = (usection: BlockU.section): BlockM.section =>
@@ -149,20 +173,20 @@ module Middle = {
     }
   and measureList =
       (middles: list(BlockU.middle)): (list(BlockM.middle), Dim.t) => {
-    let mmiddles = middles->Belt.List.map(measure);
+    let mmiddles = middles->List.map(measure);
     let dim =
       mmiddles
-      ->Belt.List.map(BlockM.Middle.getDim)
-      ->Belt.List.reduce(Dim.zero, Dim.sumWidthMaxHeight);
+      ->List.map(BlockM.Middle.getDim)
+      ->List.reduce(Dim.zero, Dim.sumWidthMaxHeight);
     (mmiddles, dim);
   }
   and measureSectionList =
       (sections: list(BlockU.section)): (list(BlockM.section), Dim.t) => {
-    let msections = sections->Belt.List.map(measureSection);
+    let msections = sections->List.map(measureSection);
     let dim =
       msections
-      ->Belt.List.map(BlockM.Middle.getSectionDim)
-      ->Belt.List.reduce(Dim.zero, Dim.sumWidthMaxHeight);
+      ->List.map(BlockM.Middle.getSectionDim)
+      ->List.reduce(Dim.zero, Dim.sumWidthMaxHeight);
     (msections, dim);
   };
 };
